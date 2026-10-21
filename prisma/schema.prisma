@@ -1,0 +1,69 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Product {
+  id             Int         @id @default(autoincrement())
+  name           String
+  description    String?
+  unitPriceCents Int
+  inventory      Int
+  createdAt      DateTime    @default(now())
+  cartItems      CartItem[]
+  orderItems     OrderItem[]
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  status    String     @default("ACTIVE") // ACTIVE, CHECKED_OUT
+  createdAt DateTime   @default(now())
+  items     CartItem[]
+  order     Order?
+}
+
+model CartItem {
+  id        Int     @id @default(autoincrement())
+  cartId    String
+  productId Int
+  quantity  Int
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+}
+
+model Order {
+  id                  String      @id @default(uuid())
+  cartId              String      @unique
+  idempotencyKey      String      @unique
+  grossAmountCents    Int
+  discountAmountCents Int         @default(0)
+  netAmountCents      Int
+  createdAt           DateTime    @default(now())
+  cart                Cart        @relation(fields: [cartId], references: [id])
+  items               OrderItem[]
+}
+
+model OrderItem {
+  id             Int     @id @default(autoincrement())
+  orderId        String
+  productId      Int
+  quantity       Int
+  unitPriceCents Int
+  order          Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product        Product @relation(fields: [productId], references: [id])
+}
+
+model Coupon {
+  id                   Int      @id @default(autoincrement())
+  code                 String   @unique
+  discountPercent      Int
+  milestoneOrderNumber Int?     @unique
+  status               String   @default("AVAILABLE") // AVAILABLE, REDEEMED
+  createdAt            DateTime @default(now())
+}

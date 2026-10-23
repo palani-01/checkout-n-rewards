@@ -589,22 +589,23 @@ export default function App() {
                       <div style={{ color: '#f8fafc', fontWeight: 500, fontSize: '14px' }}>Order Milestone Reward Trigger</div>
                       <div style={{ color: '#94a3b8', fontSize: '12px' }}>Generates reward coupon if configured order milestone (nth order) is reached.</div>
                     </div>
-                    <Button 
-                      style={{ background: '#334155', borderColor: '#475569', color: '#f8fafc' }}
-                      onClick={async () => {
-                        try {
-                          const data = await api.generateMilestoneCoupon();
-                          if (data.success) {
-                            message.success('Milestone coupon successfully generated!');
-                            loadAdminData();
-                          } else {
-                            message.error(data.error || 'Milestone not reached yet.');
-                          }
-                        } catch (err) {
-                          message.error('Failed to generate milestone coupon');
-                        }
-                      }}
-                    >
+                        <Button 
+                          style={{ background: '#334155', borderColor: '#475569', color: '#f8fafc' }}
+                          onClick={async () => {
+                            try {
+                              const data = await api.generateMilestoneCoupon();
+                              if (data.success) {
+                                message.success('Milestone coupon successfully generated!');
+                                loadAdminData();
+                              } else {
+                                message.error(data.error || 'Milestone not reached yet.');
+                              }
+                            } catch (err) {
+                              const exactErrorMessage = err.response?.data?.error || err.message || 'Failed to generate milestone coupon';
+                              message.error(exactErrorMessage);
+                            }
+                          }}
+                        >
                       Request Milestone Generation
                     </Button>
                   </div>
